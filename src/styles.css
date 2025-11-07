@@ -1,0 +1,165 @@
+/* Global Theme */
+:root {
+  --bg: #0b0f14;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #60a5fa;
+  --border: #1f2937;
+  --row-hover: #0f172a;
+  --skeleton: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.15) 37%,
+    rgba(255, 255, 255, 0.05) 63%
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system,
+    Segoe UI, Roboto, Helvetica Neue, Arial;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.app__header {
+  margin-bottom: 16px;
+}
+
+.app__header h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.input {
+  flex: 1;
+  background: #0b1220;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+/* Table */
+.table {
+  width: 100%;
+}
+
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #0e1628;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Grid Layout (5 columns) */
+.tr {
+  display: grid;
+  grid-template-columns:
+    80px    /* ID */
+    2fr     /* Name */
+    3fr     /* Email */
+    100px   /* Age */
+    2fr;    /* City */
+  align-items: center;
+  height: 44px;
+  padding: 0 8px;
+}
+
+.tr--head {
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.tr:hover {
+  background: var(--row-hover);
+}
+
+.th,
+.td {
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Body Scroll Container */
+.tbody {
+  height: 600px;
+  overflow: auto;
+  position: relative;
+}
+
+/* Skeleton Rows */
+.tr--skeleton .td {
+  display: flex;
+  align-items: center;
+}
+
+.skeleton {
+  height: 12px;
+  width: 70%;
+  background: #0b1220;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--skeleton);
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Bottom Status Bar */
+.statusbar {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+}

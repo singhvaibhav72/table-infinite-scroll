@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Infinite Table App",
+  "name": "Infinite Scroll Table Application",
   "icons": [
     {
       "src": "favicon.ico",
