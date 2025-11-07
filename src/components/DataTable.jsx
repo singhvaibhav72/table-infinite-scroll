@@ -7,29 +7,34 @@ import {
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
-
 import { useVirtualizer } from "@tanstack/react-virtual";
 import useInfinitePeople from "../hooks/useInfinitePeople";
 
 const columnHelper = createColumnHelper();
 
+// Column defs (all text inputs for simplicity)
 const columns = [
   columnHelper.accessor("id", {
     header: "ID",
     size: 80,
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("name", {
     header: "Name",
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("email", {
     header: "Email",
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("age", {
     header: "Age",
     size: 80,
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("city", {
     header: "City",
+    enableColumnFilter: true,
   }),
 ];
 
@@ -46,25 +51,30 @@ export default function DataTable() {
     isFetchingNextPage,
   } = useInfinitePeople();
 
+  // table state
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState([]);
+  const [columnFilters, setColumnFilters] = React.useState([]);
 
   const table = useReactTable({
     data: rawRows,
     columns,
-    state: { sorting, globalFilter },
+    state: { sorting, globalFilter, columnFilters },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    // default string filtering behavior (case-insensitive includes)
+    globalFilterFn: "includesString",
   });
 
   const tableRows = table.getRowModel().rows;
 
+  // virtualization
   const parentRef = React.useRef(null);
-  const totalCount =
-    tableRows.length + (isFetchingNextPage ? 10 : 0);
+  const totalCount = tableRows.length + (isFetchingNextPage ? 10 : 0);
 
   const rowVirtualizer = useVirtualizer({
     count: totalCount,
@@ -73,16 +83,14 @@ export default function DataTable() {
     overscan: OVERSCAN,
   });
 
-  // Infinite scroll
+  // infinite scroll trigger
   React.useEffect(() => {
-    const last = rowVirtualizer.getVirtualItems().at(-1);
+    const items = rowVirtualizer.getVirtualItems();
+    const last = items[items.length - 1];
     if (!last) return;
 
-    if (
-      last.index >= tableRows.length - 5 &&
-      hasMore &&
-      !isFetchingNextPage
-    ) {
+    const nearEnd = last.index >= tableRows.length - 5;
+    if (nearEnd && hasMore && !isFetchingNextPage) {
       loadMore();
     }
   }, [
@@ -95,41 +103,68 @@ export default function DataTable() {
 
   return (
     <div className="card">
+      {/* Global filter */}
       <div className="toolbar">
         <input
           className="input"
-          placeholder="Search…"
+          placeholder="Global search…"
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
+        <div className="hint">Click headers to sort</div>
       </div>
 
       <div className="table">
+        {/* Header row (click to sort) */}
         <div className="thead">
           {table.getHeaderGroups().map((hg) => (
             <div key={hg.id} className="tr tr--head">
-              {hg.headers.map((header) => (
-                <div
-                  key={header.id}
-                  className="th"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </div>
-              ))}
+              {hg.headers.map((header) => {
+                if (header.isPlaceholder) return <div key={header.id} className="th" />;
+                const col = header.column;
+                const dir = col.getIsSorted(); // 'asc' | 'desc' | false
+                return (
+                  <div key={header.id} className="th">
+                    <button
+                      className="th__btn"
+                      onClick={col.getToggleSortingHandler()}
+                      title="Click to sort"
+                    >
+                      {flexRender(col.columnDef.header, header.getContext())}
+                      <span className="th__sort">
+                        {dir === "asc" ? " ▲" : dir === "desc" ? " ▼" : ""}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ))}
+
+          {/* Column filter inputs */}
+          <div className="tr tr--filters">
+            {table.getFlatHeaders().map((header) => {
+              const col = header.column;
+              if (!col.getCanFilter()) {
+                return <div key={header.id} className="th" />;
+              }
+              const v = col.getFilterValue() ?? "";
+              return (
+                <div key={header.id} className="th">
+                  <input
+                    className="filter"
+                    value={v}
+                    onChange={(e) => col.setFilterValue(e.target.value)}
+                    placeholder={`Filter ${String(col.id)}…`}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div
-          className="tbody"
-          ref={parentRef}
-          style={{ height: TABLE_HEIGHT }}
-        >
+        {/* Virtualized body */}
+        <div className="tbody" ref={parentRef} style={{ height: TABLE_HEIGHT }}>
           <div
             style={{
               height: rowVirtualizer.getTotalSize(),
@@ -158,10 +193,7 @@ export default function DataTable() {
                   ) : (
                     row.getVisibleCells().map((cell) => (
                       <div key={cell.id} className="td">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </div>
                     ))
                   )}
@@ -173,7 +205,7 @@ export default function DataTable() {
       </div>
 
       <div className="statusbar">
-        Loaded rows: {rawRows.length}
+        Loaded rows: <strong>{rawRows.length}</strong>
       </div>
     </div>
   );
@@ -183,7 +215,7 @@ function SkeletonRow({ colCount }) {
   return (
     <>
       {Array.from({ length: colCount }).map((_, i) => (
-        <div key={i} className="td"> 
+        <div key={i} className="td">
           <div className="skeleton" />
         </div>
       ))}

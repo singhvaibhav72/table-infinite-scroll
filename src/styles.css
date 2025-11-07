@@ -163,3 +163,35 @@ body {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* header sorting button */
+.th__btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.th__btn:hover { color: var(--accent); }
+.th__sort { opacity: 0.85; }
+
+/* column filter row */
+.tr--filters {
+  height: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.filter {
+  width: 100%;
+  background: #0b1220;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  outline: none;
+}
+.filter:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.2);
+}
